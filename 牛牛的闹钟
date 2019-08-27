@@ -1,0 +1,35 @@
+//牛牛总是睡过头，所以他定了很多闹钟，只有在闹钟响的时候他才会醒过来并且决定起不起床。
+//从他起床算起他需要X分钟到达教室，上课时间为当天的A时B分，请问他最晚可以什么时间起床
+import java.util.*;
+ 
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc=new Scanner(System.in);
+        if(sc.hasNext()){
+            int num=sc.nextInt();
+            int a[]=new int[num];
+            int b[]=new int[num];
+            int c[]=new int [num];
+             
+            for(int i=0;i<num;i++){
+                a[i]=sc.nextInt();
+                b[i]=sc.nextInt();
+                c[i]=a[i]*60+b[i];
+            }
+            int x=sc.nextInt();
+            int A=sc.nextInt();
+            int B=sc.nextInt();
+            for(int i=0;i<c.length;i++)
+            {
+                if((A*60+B-x-c[i])<0)
+                    c[i]=0;
+            }
+            Arrays.sort(c);
+            int a1=c[c.length-1]/60;
+            int b1=c[c.length-1]%60;
+            System.out.println(a1+" "+b1);
+             
+        }
+     
+}
+}
