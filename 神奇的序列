@@ -1,0 +1,34 @@
+
+import java.util.*;
+public class test10{
+    public static void main(String[] args) {
+		// 神奇的解法，序号%3取余，若是2，0就能整除，1不能整除
+		// 例如：序号1 数字1余数1，不能整除；序号2数字12余数2，能整除；序号3数字123余数0，能整除
+		Scanner sc = new Scanner(System.in);
+    if(sc.hasNext()){
+		int a = sc.nextInt();
+		int b = sc.nextInt();
+        if(a>b)
+        {
+            System.out.println(0);
+            return;
+        }
+		int count = 0;
+		for (int i = a; i <= b; i++) {
+			switch (i % 3) {
+			case 1:
+				break;
+			case 2:
+				count++;
+				break;
+			case 0:
+				count++;
+				break;
+			default:
+				break;
+			}
+		}
+		System.out.println(count);
+    }
+}
+}
