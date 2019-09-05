@@ -1,0 +1,204 @@
+
+	/**
+	 * 机器人将棋子放入棋盘
+	 * 
+	 * @param xindex
+	 *            -棋子的横坐标
+	 * 
+	 * @param yindex
+	 *            -棋子的纵坐标
+	 */
+	public void chessForMachine(int xindex, int yindex) {
+		try {
+			Thread.sleep(1000);// 计算机下棋有1秒延迟
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		byte[][] chessmanArray = gobangModel1.getChessmanArray();// 获取棋盘数组
+		turn = !turn;// 玩家恢复下棋的权限
+		chessmanArray[xindex][yindex] = GobangModel.BLACK_CHESSMAN;// 在此处下一枚黑棋
+		gobangModel1.setChessmanArray(chessmanArray);// 更新棋盘数据
+		repaint();// 重绘组件
+		int winColor = arithmetic(GobangModel.BLACK_CHESSMAN, xindex, yindex);// 判断黑棋是否胜利
+		// 在判断胜负情况后再发送model中的棋盘数组，因为这个数组可能带有标识连线的棋子数据
+		if (winColor != 0 && winColor == GobangModel.BLACK_CHESSMAN) {
+			chessPanel.send(ChessPanel.WIN); // 发送胜利代码
+			win = false;// 玩家胜利状态为false
+			towardsWin = true;// 对家（AI）胜利状态为true
+			chessPanel.reInit();// 重新初始化游戏状态
+		}
+	}
+
+	/**
+	 * 整理棋盘(重绘棋盘)
+	 */
+	public void zhengliBoard() {
+		repaint();// 重绘组件
+	}
+
+	/**
+	 * 五子棋算法
+	 * 
+	 * @param n
+	 *            - 代表棋子颜色的整数
+	 * @param Arow
+	 *            - 行编号
+	 * @param Acolumn
+	 *            - 列编号
+	 * @return 胜利一方的棋子颜色的整数
+	 */
+	public int arithmetic(int n, int Arow, int Acolumn) {
+		byte n8 = (byte) (n ^ 8);// 导致胜利的棋子的值
+		byte[][] note = gobangModel1.getChessmanArrayCopy();// 获取棋盘所有值的数组
+		int BCount = 1;// 记录连子个数，如果超过或等于5个，则胜利
+		// 水平查找
+		boolean Lbol = true;// 默认向左走可以获胜
+		boolean Rbol = true;// 默认向右走可以获胜
+		for (int i = 1; i <= 5; i++) {// 以参数棋子为原点，向在水平方向走出5步
+			if ((Acolumn + i) > 14) {// 如果棋子超出最大列数
+				Rbol = false;// 向右走不会获胜
+			}
+			if ((Acolumn - i) < 0) {// 如果棋子超出最小列数
+				Lbol = false;// 向左走不会获胜
+			}
+			if (Rbol == true) {// 如果向右走可能会获胜
+				// 如果向右走，挨着我的棋子都与我颜色相同
+				if (note[Arow][Acolumn + i] == n) {
+					++BCount;// 连子数递增
+					note[Arow][Acolumn + i] = n8;// 将这些棋子标记为可能导致获胜的棋子
+				} else {
+					Rbol = false;// 向右走不会获胜
+				}
+			}
+			if (Lbol == true) {// 如果向左走可能会获胜
+				// 如果向左走，挨着我的棋子都与我颜色相同
+				if (note[Arow][Acolumn - i] == n) {
+					++BCount;// 连子数递增
+					note[Arow][Acolumn - i] = n8;// 将这些棋子标记为可能导致获胜的棋子
+				} else {
+					Lbol = false;// 向左走不会获胜
+				}
+			}
+			if (BCount >= 5) {// 如果同类型的棋子数大于等于5个
+				note[Arow][Acolumn] = n8;// 参数传来的位置上的棋子也改为可能导致获胜的棋子
+				gobangModel1.setChessmanArray(note);// 更新棋盘数据
+				repaint();// 重绘棋盘
+				return n; // 返回胜利一方的棋子的值
+			}
+		}
+
+		// 垂直查找
+		note = gobangModel1.getChessmanArrayCopy();// 获取棋牌的值（未发生更改的值）
+		boolean Ubol = true;// 默认向上走可以获胜
+		boolean Dbol = true;// 默认向下走可以获胜
+		BCount = 1;// 连子个数初始化
+		for (int i = 1; i <= 5; i++) {// 以参数棋子为原点，向在垂直方向走出5步
+			if ((Arow + i) > 14) {// 如果超出棋盘的最大行数
+				Dbol = false;// 向下走不会获胜
+			}
+			if ((Arow - i) < 0) {// 如果超出棋盘的最小行数
+				Ubol = false;// 向上走不会获胜
+			}
+			if (Dbol == true) {// 如果向下走可以获胜
+				// 如果向下走，挨着我的棋子都与我颜色相同
+				if (note[Arow + i][Acolumn] == n) {
+					++BCount;// 连子数递增
+					note[Arow + i][Acolumn] = n8;// 将这些棋子标记为可能导致获胜的棋子
+				} else {
+					Dbol = false;// 向下走不会获胜
+				}
+			}
+			if (Ubol == true) {// 如果向上走可能获胜
+				// 如果向上走，挨着我的棋子都与我颜色相同
+				if (note[Arow - i][Acolumn] == n) {
+					++BCount;// 连子数递增
+					note[Arow - i][Acolumn] = n8;// 将这些棋子标记为可能导致获胜的棋子
+				} else {
+					Ubol = false;// 向上走不会获胜
+				}
+			}
+			if (BCount >= 5) { // 如果同类型的棋子大于等于5个
+				note[Arow][Acolumn] = n8;// 参数传来的位置上的棋子也改为可能导致获胜的棋子
+				gobangModel1.setChessmanArray(note);// 更新棋盘数据
+				repaint();// 重绘棋盘
+				return n; // 返回胜利一方的棋子
+			}
+		}
+
+		// 正斜查找
+		note = gobangModel1.getChessmanArrayCopy();// 获取棋牌的值（未发生更改的值）
+		boolean LUbol = true;// 默认向左上走可以获胜
+		boolean RDbol = true;// 默认向右下走可以获胜
+		BCount = 1;// 连子个数初始化
+		for (int i = 1; i <= 5; i++) {// 以参数棋子为原点，向在正斜方向走出5步
+			if ((Arow - i) < 0 || (Acolumn - i < 0)) {// 如果超出左上的斜线
+				LUbol = false;// 向左上走不会获胜
+			}
+			if ((Arow + i) > 14 || (Acolumn + i > 14)) {// 如果超出右下的斜线
+				RDbol = false;// 向右下走不会获胜
+			}
+			if (LUbol == true) {// 如果向左上走可以获胜
+				// 如果向左上走，挨着我的棋子都与我颜色相同
+				if (note[Arow - i][Acolumn - i] == n) {// 如果左上斜线上有相同类型的棋子
+					++BCount;// 连子数递增
+					note[Arow - i][Acolumn - i] = n8;// 将这些棋子标记为可能导致获胜的棋子
+				} else {
+					LUbol = false;// 向左上走不会获胜
+				}
+			}
+			if (RDbol == true) {// 如果向右下走可以获胜
+				// 如果向右下走，挨着我的棋子都与我颜色相同
+				if (note[Arow + i][Acolumn + i] == n) {// 如果右下斜线上有相同类型的棋子
+					++BCount;// 连子数递增
+					note[Arow + i][Acolumn + i] = n8;// 将这些棋子标记为可能导致获胜的棋子
+				} else {
+					RDbol = false;// 向右下走不会获胜
+				}
+			}
+			if (BCount >= 5) {// 如果同类型的棋子大于等于5个
+				note[Arow][Acolumn] = n8;// 参数传来的位置上的棋子也改为可能导致获胜的棋子
+				gobangModel1.setChessmanArray(note);// 更新棋盘数据
+				repaint();// 重绘棋盘
+				return n; // 返回胜利一方的棋子
+			}
+		}
+		// 反斜查找
+		note = gobangModel1.getChessmanArrayCopy();// 获取棋牌的值（未发生更改的值）
+		boolean RUbol = true;// 默认向右上走可以获胜
+		boolean LDbol = true;// 默认向左下走可以获胜
+		BCount = 1;// 连子个数初始化
+		for (int i = 1; i <= 5; i++) {// 以参数棋子为原点，向在反斜方向走出5步
+			if ((Arow - i) < 0 || (Acolumn + i > 14)) {// 如果超出右上的斜线
+				RUbol = false;// 向右上走不会获胜
+			}
+			if ((Arow + i) > 14 || (Acolumn - i < 0)) {// 如果超出左下的斜线
+				LDbol = false;// 向左下走不会获胜
+			}
+			if (RUbol == true) {// 如果向右上走可以获胜
+				// 如果向右上走，挨着我的棋子都与我颜色相同
+				if (note[Arow - i][Acolumn + i] == n) {
+					++BCount;// 连子数递增
+					note[Arow - i][Acolumn + i] = n8;// 将这些棋子标记为可能导致获胜的棋子
+				} else {
+					RUbol = false;// 默认向右上走可以获胜
+				}
+			}
+			if (LDbol == true) {// 如果向左下走可以获胜
+				// 如果向左下走，挨着我的棋子都与我颜色相同
+				if (note[Arow + i][Acolumn - i] == n) {
+					++BCount;// 连子数递增
+					note[Arow + i][Acolumn - i] = n8;// 将这些棋子标记为可能导致获胜的棋子
+				} else {
+					LDbol = false;// 默认向左下走可以获胜
+				}
+			}
+			if (BCount >= 5) {// 如果同类型的棋子大于等于5个
+				note[Arow][Acolumn] = n8;// 参数传来的位置上的棋子也改为可能导致获胜的棋子
+				gobangModel1.setChessmanArray(note);// 更新棋盘数据
+				repaint();// 重绘棋盘
+				return n;// 返回胜利一方的棋子
+			}
+		}
+		return 0;
+	}
+
